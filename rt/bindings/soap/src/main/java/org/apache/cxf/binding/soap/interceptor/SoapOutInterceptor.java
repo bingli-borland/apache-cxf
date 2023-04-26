@@ -64,10 +64,14 @@ import org.apache.cxf.staxutils.DelegatingXMLStreamWriter;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.ws.addressing.EndpointReferenceUtils;
+import org.codehaus.stax2.ri.evt.AttributeEventImpl;
+import org.codehaus.stax2.ri.evt.NamespaceEventImpl;
+
 
 public class SoapOutInterceptor extends AbstractSoapInterceptor {
     public static final String WROTE_ENVELOPE_START = "wrote.envelope.start";
-
+    public static final String ENVELOPE_EVENTS = "envelope.events";
+    public static final String ENVELOPE_PREFIX = "envelope.prefix";
     private static final ResourceBundle BUNDLE = BundleUtils.getBundle(SoapOutInterceptor.class);
 
     private Bus bus;
@@ -109,7 +113,11 @@ public class SoapOutInterceptor extends AbstractSoapInterceptor {
             XMLStreamWriter xtw = message.getContent(XMLStreamWriter.class);
             String soapPrefix = xtw.getPrefix(soapVersion.getNamespace());
             if (StringUtils.isEmpty(soapPrefix)) {
-                soapPrefix = "soap";
+                if (message.get(ENVELOPE_PREFIX) != null) {
+                    soapPrefix = (String) message.get(ENVELOPE_PREFIX);
+                } else {
+                    soapPrefix = "soap";
+                }
             }
             if (message.hasAdditionalEnvNs()) {
                 Map<String, String> nsMap = message.getEnvelopeNs();
@@ -138,6 +146,31 @@ public class SoapOutInterceptor extends AbstractSoapInterceptor {
                     xtw.writeNamespace(soapPrefix, soapVersion.getNamespace());
                 } else {
                     soapPrefix = s2;
+                }
+
+                List events = (List) message.get(ENVELOPE_EVENTS);
+                if (events != null) {
+                    for (Object event : events) {
+                        NamespaceEventImpl namespaceEvent = null;
+                        if (!(event instanceof NamespaceEventImpl)) {
+                            if (event instanceof AttributeEventImpl) {
+                                AttributeEventImpl attributeEvent = (AttributeEventImpl) event;
+                                String prefix = attributeEvent.getName().getPrefix();
+                                String name = attributeEvent.getName().getLocalPart();
+                                String namespace = attributeEvent.getName().getNamespaceURI();
+                                String value = attributeEvent.getValue();
+                                xtw.writeAttribute(prefix, namespace, name, value);
+                            }
+                            continue;
+                        }
+                        namespaceEvent = (NamespaceEventImpl) event;
+                        String prefix = namespaceEvent.getPrefix();
+                        if (soapPrefix.equals(prefix)) {
+                            continue;
+                        }
+                        String namespaceURI = namespaceEvent.getNamespaceURI();
+                        xtw.writeNamespace(prefix, namespaceURI);
+                    }
                 }
             }
             boolean preexistingHeaders = message.hasHeaders();

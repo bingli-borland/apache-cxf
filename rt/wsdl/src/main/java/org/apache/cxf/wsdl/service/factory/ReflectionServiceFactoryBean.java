@@ -673,18 +673,21 @@ public class ReflectionServiceFactoryBean extends org.apache.cxf.service.factory
 
         // Some of the operations may have switched from unwrapped to wrapped.
         // Update the bindings.
-        for (ServiceInfo service : getService().getServiceInfos()) {
-            for (BindingInfo bi : service.getBindings()) {
-                List<BindingOperationInfo> biremoves = new ArrayList<>();
-                for (BindingOperationInfo binfo : bi.getOperations()) {
-                    if (removes.contains(binfo.getOperationInfo())) {
-                        biremoves.add(binfo);
-                    } else {
-                        binfo.updateUnwrappedOperation();
+        boolean update = Boolean.getBoolean("org.apache.cxf.service.model.BindingOperationInfo.update");
+        if (update) {
+            for (ServiceInfo service : getService().getServiceInfos()) {
+                for (BindingInfo bi : service.getBindings()) {
+                    List<BindingOperationInfo> biremoves = new ArrayList<>();
+                    for (BindingOperationInfo binfo : bi.getOperations()) {
+                        if (removes.contains(binfo.getOperationInfo())) {
+                            biremoves.add(binfo);
+                        } else {
+                            binfo.updateUnwrappedOperation();
+                        }
                     }
-                }
-                for (BindingOperationInfo binfo : biremoves) {
-                    bi.removeOperation(binfo);
+                    for (BindingOperationInfo binfo : biremoves) {
+                        bi.removeOperation(binfo);
+                    }
                 }
             }
         }

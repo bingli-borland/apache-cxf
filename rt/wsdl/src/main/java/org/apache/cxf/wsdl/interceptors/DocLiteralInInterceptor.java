@@ -57,6 +57,7 @@ public class DocLiteralInInterceptor extends AbstractInDatabindingInterceptor {
         + ".DocLiteralInInterceptor.keep-parameters-wrapper";
 
     private static final Logger LOG = LogUtils.getL7dLogger(DocLiteralInInterceptor.class);
+    private static final boolean DOCLIT = Boolean.parseBoolean(System.getProperty("soap.force.doclit.bare", "true"));
 
     public DocLiteralInInterceptor() {
         super(Phase.UNMARSHAL);
@@ -87,7 +88,8 @@ public class DocLiteralInInterceptor extends AbstractInDatabindingInterceptor {
         bop = getBindingOperationInfo(xmlReader, exchange, bop, client);
         boolean forceDocLitBare = false;
         if (bop != null && bop.getBinding() != null) {
-            forceDocLitBare = Boolean.TRUE.equals(bop.getBinding().getService().getProperty("soap.force.doclit.bare"));
+            forceDocLitBare = DOCLIT || Boolean.TRUE.equals(bop.getBinding().getService()
+                    .getProperty("soap.force.doclit.bare"));
         }
         DataReader<XMLStreamReader> dr = getDataReader(message);
 
@@ -195,7 +197,7 @@ public class DocLiteralInInterceptor extends AbstractInDatabindingInterceptor {
                     if (forceDocLitBare && parameters.isEmpty()) {
                         // webservice provider does not need to ensure size
                         parameters.add(o);
-                    } else {
+                    } else if (p != null) {
                         parameters.put(p, o);
                     }
 

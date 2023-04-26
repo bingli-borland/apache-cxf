@@ -42,6 +42,11 @@ import org.apache.cxf.service.invoker.Invoker;
  */
 public class ServiceInvokerInterceptor extends AbstractPhaseInterceptor<Message> {
 
+    public static final String ENVELOPE_EVENTS = "envelope.events";
+    public static final String BODY_EVENTS = "body.events";
+    public static final String ENVELOPE_PREFIX = "envelope.prefix";
+    public static final String BODY_PREFIX = "body.prefix";
+
     public ServiceInvokerInterceptor() {
         super(Phase.INVOKE);
     }
@@ -65,6 +70,10 @@ public class ServiceInvokerInterceptor extends AbstractPhaseInterceptor<Message>
                         outMessage = new MessageImpl(16, 1); // perf: size 16 / factor 1 to avoid resize operation
                         outMessage.setExchange(exchange);
                         outMessage = ep.getBinding().createMessage(outMessage);
+                        outMessage.put(ENVELOPE_EVENTS, message.get(ENVELOPE_EVENTS));
+                        outMessage.put(BODY_EVENTS, message.get(BODY_EVENTS));
+                        outMessage.put(ENVELOPE_PREFIX, message.get(ENVELOPE_PREFIX));
+                        outMessage.put(BODY_PREFIX, message.get(BODY_PREFIX));
                         exchange.setOutMessage(outMessage);
                     }
                     copyJaxwsProperties(message, outMessage);

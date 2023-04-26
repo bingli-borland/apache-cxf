@@ -127,6 +127,10 @@ public class WSDLServiceFactory extends AbstractServiceFactoryBean {
             }
         } else {
             javax.wsdl.Service wsdlService = definition.getService(serviceName);
+            if (wsdlService == null && definition.getServices().size() > 0) {
+                Map.Entry entry = (Map.Entry) definition.getServices().entrySet().iterator().next();
+                wsdlService = (javax.wsdl.Service) entry.getValue();
+            }
             if (wsdlService == null) {
                 if ((!PartialWSDLProcessor.isServiceExisted(definition, serviceName))
                     && (!PartialWSDLProcessor.isBindingExisted(definition, serviceName))
