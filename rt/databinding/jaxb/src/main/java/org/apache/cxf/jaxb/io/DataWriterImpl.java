@@ -86,7 +86,7 @@ public class DataWriterImpl<T> extends JAXBDataBase implements DataWriter<T> {
                 veventHandler = databinding.getValidationEventHandler();
             }
             setEventHandler = MessageUtils.getContextualBoolean(m,
-                    JAXBDataBinding.SET_VALIDATION_EVENT_HANDLER, true);
+                    JAXBDataBinding.SET_VALIDATION_EVENT_HANDLER, false);
         }
     }
 

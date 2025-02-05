@@ -95,7 +95,7 @@ public class DataReaderImpl<T> extends JAXBDataBase implements DataReader<T> {
                 veventHandler = databinding.getValidationEventHandler();
             }
             setEventHandler = MessageUtils.getContextualBoolean(m,
-                    JAXBDataBinding.SET_VALIDATION_EVENT_HANDLER, true);
+                    JAXBDataBinding.SET_VALIDATION_EVENT_HANDLER, false);
 
             Object unwrapProperty = m.get(JAXBDataBinding.UNWRAP_JAXB_ELEMENT);
             if (unwrapProperty == null) {
